@@ -15,7 +15,10 @@
       "Bash(source:*)",
       "Bash(pip install:*)",
       "Bash(pytest:*)",
-      "Bash(kantan-play-midi:*)"
+      "Bash(kantan-play-midi:*)",
+      "Bash(gh pr view:*)",
+      "Bash(git stash:*)",
+      "Bash(python test:*)"
     ],
     "deny": []
   }

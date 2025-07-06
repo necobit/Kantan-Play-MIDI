@@ -11,6 +11,9 @@ from .player import MIDIPlayer
 from .input_handler import InputHandler
 from .models import Note, Performance
 from .exceptions import KantanPlayMIDIError, InvalidInputError, MIDIDeviceError, ConfigurationError
+from .processor import PerformanceProcessor
+from .timing import TimingCalculator
+from .sequence import PlaybackSequence, MIDIEvent, MIDIEventType
 
 __all__ = [
     "MIDIConfig", 
@@ -22,5 +25,10 @@ __all__ = [
     "KantanPlayMIDIError",
     "InvalidInputError",
     "MIDIDeviceError",
-    "ConfigurationError"
+    "ConfigurationError",
+    "PerformanceProcessor",
+    "TimingCalculator",
+    "PlaybackSequence",
+    "MIDIEvent",
+    "MIDIEventType"
 ]
