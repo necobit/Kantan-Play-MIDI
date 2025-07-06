@@ -13,7 +13,9 @@ from rich.syntax import Syntax
 from .input_handler import InputHandler
 from .config import MIDIConfig
 from .converter import MIDIConverter
-from .exceptions import KantanPlayMIDIError
+from .processor import PerformanceProcessor
+from .player import MIDIPlayer, PlaybackState
+from .exceptions import KantanPlayMIDIError, MIDIDeviceError
 
 
 console = Console()
@@ -38,6 +40,21 @@ console = Console()
     help='変換結果を表示する'
 )
 @click.option(
+    '--play',
+    is_flag=True,
+    help='実際にMIDI演奏を実行する'
+)
+@click.option(
+    '--midi-port',
+    type=str,
+    help='使用するMIDIポート名'
+)
+@click.option(
+    '--list-ports',
+    is_flag=True,
+    help='利用可能なMIDIポートを一覧表示'
+)
+@click.option(
     '--verbose', '-v',
     is_flag=True,
     help='詳細な情報を表示'
@@ -47,6 +64,9 @@ def main(
     config: Path,
     validate_only: bool,
     show_conversion: bool,
+    play: bool,
+    midi_port: Optional[str],
+    list_ports: bool,
     verbose: bool
 ) -> None:
     """
@@ -55,9 +75,16 @@ def main(
     INPUT_FILE: 演奏データのJSONファイル
     """
     try:
+        # MIDIポート一覧表示
+        if list_ports:
+            _list_midi_ports()
+            return
+
         if verbose:
             console.print(f"[blue]入力ファイル:[/blue] {input_file}")
             console.print(f"[blue]設定ファイル:[/blue] {config}")
+            if midi_port:
+                console.print(f"[blue]MIDIポート:[/blue] {midi_port}")
             console.print()
 
         # 入力ファイルの読み込みと検証
@@ -80,16 +107,22 @@ def main(
         # MIDI設定の読み込み
         console.print("[yellow]🎵 MIDI設定を読み込み中...[/yellow]")
         midi_config = MIDIConfig(config)
-        converter = MIDIConverter(midi_config)
+        processor = PerformanceProcessor(midi_config)
         
         console.print("[green]✅ MIDI設定の読み込みが完了しました[/green]")
 
-        if show_conversion or verbose:
-            _display_conversion_results(performance, converter)
+        # シーケンス生成
+        sequence = processor.process_performance(performance)
 
-        # TODO: 実際のMIDI演奏処理は後のIssueで実装
-        console.print("[yellow]🎹 MIDI演奏機能は未実装です[/yellow]")
-        console.print("[blue]💡 Issue #4でMIDI出力機能が実装される予定です[/blue]")
+        if show_conversion or verbose:
+            _display_conversion_results(performance, processor.converter)
+            _display_sequence_info(sequence)
+
+        # MIDI演奏の実行
+        if play:
+            _execute_midi_playback(sequence, midi_port)
+        else:
+            console.print("[blue]💡 実際の演奏を行うには --play オプションを追加してください[/blue]")
 
     except KantanPlayMIDIError as e:
         console.print(f"[red]❌ エラー: {e}[/red]")
@@ -146,6 +179,69 @@ def _estimate_duration(performance) -> float:
     """演奏時間を推定"""
     total_beats = len(performance.notes) * 8  # 各音符は8回degreeボタンを押す
     return total_beats / (performance.tempo * 4)  # 4拍で1小節
+
+
+def _list_midi_ports() -> None:
+    """利用可能なMIDIポートを一覧表示"""
+    try:
+        player = MIDIPlayer()
+        ports = player.get_available_ports()
+        
+        if ports:
+            console.print("[green]🎹 利用可能なMIDIポート:[/green]")
+            for i, port in enumerate(ports):
+                console.print(f"  [{i}] {port}")
+        else:
+            console.print("[yellow]⚠️  利用可能なMIDIポートが見つかりません[/yellow]")
+            
+    except Exception as e:
+        console.print(f"[red]❌ MIDIポート取得エラー: {e}[/red]")
+
+
+def _display_sequence_info(sequence) -> None:
+    """シーケンス情報を表示"""
+    console.print(f"\n[yellow]🎼 演奏シーケンス情報:[/yellow]")
+    console.print(f"  総イベント数: {len(sequence.events)}")
+    console.print(f"  演奏時間: {sequence.total_duration:.2f}秒")
+
+
+def _execute_midi_playback(sequence, midi_port: Optional[str]) -> None:
+    """MIDI演奏を実行"""
+    player = MIDIPlayer()
+    
+    try:
+        # MIDI接続
+        console.print("[yellow]🔌 MIDIデバイスに接続中...[/yellow]")
+        player.connect(midi_port)
+        console.print(f"[green]✅ MIDIポート '{player.midi_port}' に接続しました[/green]")
+        
+        # 演奏開始
+        console.print(f"[green]🎵 演奏を開始します... (時間: {sequence.total_duration:.1f}秒)[/green]")
+        console.print("[dim]Ctrl+C で演奏を停止できます[/dim]")
+        
+        player.play_sequence(sequence)
+        
+        # 演奏完了まで待機
+        import time
+        try:
+            while player.get_state() == PlaybackState.PLAYING:
+                current_time = player.get_current_time()
+                progress = (current_time / sequence.total_duration) * 100
+                console.print(f"\r[blue]進行: {current_time:.1f}s / {sequence.total_duration:.1f}s ({progress:.1f}%)[/blue]", end="")
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            console.print(f"\n[yellow]⏸️  ユーザーによって演奏が停止されました[/yellow]")
+            player.stop()
+            
+        console.print(f"\n[green]🎉 演奏が完了しました！[/green]")
+        
+    except MIDIDeviceError as e:
+        console.print(f"[red]🎹 MIDIエラー: {e}[/red]")
+        console.print("[blue]💡 利用可能なMIDIポートを確認するには: --list-ports[/blue]")
+    except Exception as e:
+        console.print(f"[red]💥 演奏エラー: {e}[/red]")
+    finally:
+        player.disconnect()
 
 
 if __name__ == '__main__':
