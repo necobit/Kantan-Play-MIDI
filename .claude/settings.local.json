@@ -5,7 +5,9 @@
       "Bash(ls:*)",
       "Bash(git init:*)",
       "Bash(git branch:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh repo create:*)",
+      "Bash(gh issue create:*)"
     ],
     "deny": []
   }
