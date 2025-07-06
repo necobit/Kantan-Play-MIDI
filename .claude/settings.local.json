@@ -7,7 +7,15 @@
       "Bash(git branch:*)",
       "Bash(git add:*)",
       "Bash(gh repo create:*)",
-      "Bash(gh issue create:*)"
+      "Bash(gh issue create:*)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git pull:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(pytest:*)",
+      "Bash(kantan-play-midi:*)"
     ],
     "deny": []
   }
