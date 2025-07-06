@@ -1,0 +1,54 @@
+{
+  "slot": 2,
+  "tempo": 90,
+  "notes": [
+    {
+      "degree": "1",
+      "modifier1": 1,
+      "modifier2": 0,
+      "modifier3": 0
+    },
+    {
+      "degree": "3",
+      "modifier1": 2,
+      "modifier2": 0,
+      "modifier3": 0
+    },
+    {
+      "degree": "5",
+      "modifier1": 0,
+      "modifier2": 1,
+      "modifier3": 0
+    },
+    {
+      "degree": "7",
+      "modifier1": 0,
+      "modifier2": 0,
+      "modifier3": 1
+    },
+    {
+      "degree": "2",
+      "modifier1": 1,
+      "modifier2": 2,
+      "modifier3": 0
+    },
+    {
+      "degree": "4",
+      "modifier1": 0,
+      "modifier2": 1,
+      "modifier3": 2
+    },
+    {
+      "degree": "6",
+      "modifier1": 1,
+      "modifier2": 0,
+      "modifier3": 3
+    },
+    {
+      "degree": "1",
+      "modifier1": 1,
+      "modifier2": 2,
+      "modifier3": 3
+    }
+  ]
+}
