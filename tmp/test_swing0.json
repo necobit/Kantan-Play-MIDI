@@ -1,0 +1,9 @@
+{
+  "slot": 1,
+  "tempo": 120,
+  "swing": 0,
+  "notes": [
+    {"degree": "1", "modifier1": 0, "modifier2": 0, "modifier3": 0},
+    {"degree": "4", "modifier1": 0, "modifier2": 0, "modifier3": 0}
+  ]
+}

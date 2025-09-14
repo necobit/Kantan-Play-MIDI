@@ -43,7 +43,7 @@ class PerformanceProcessor:
         
         for i, note in enumerate(performance.notes):
             note_start_time = note_timings[i]
-            note_events = self._process_note(note, note_start_time, timing_calc, i + 1)
+            note_events = self._process_note(note, note_start_time, timing_calc, i + 1, swing=performance.swing)
             events.extend(note_events)
 
         # 3. 演奏時間の計算
@@ -79,7 +79,9 @@ class PerformanceProcessor:
         note: Note, 
         note_start_time: float, 
         timing_calc: TimingCalculator,
-        note_index: int
+        note_index: int,
+        *,
+        swing: int = 0,
     ) -> List[MIDIEvent]:
         """1つの音符を処理してMIDIイベントリストを生成"""
         events: List[MIDIEvent] = []
@@ -119,12 +121,12 @@ class PerformanceProcessor:
             else:
                 # 次ノートの開始（8拍後）
                 next_on = note_start_time + (timing_calc.seconds_per_beat * 8)
-            t_off = TimingCalculator.compute_note_off_time(press_time, next_on, swing=performance.swing)
+            t_off = TimingCalculator.compute_note_off_time(press_time, next_on, swing=swing)
             events.append(MIDIEvent(
                 timestamp=t_off,
                 event_type=MIDIEventType.NOTE_OFF,
                 note=degree_note,
-                description=f"Note {note_index}: Degree '{note.degree}' release {i}/8 (swing={performance.swing})"
+                description=f"Note {note_index}: Degree '{note.degree}' release {i}/8 (swing={swing})"
             ))
 
         # 3. モディファイア解放
