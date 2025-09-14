@@ -113,12 +113,18 @@ class PerformanceProcessor:
                 description=f"Note {note_index}: Degree '{note.degree}' press {i}/8"
             ))
             
-            # ノートオフ（短い間隔で）
+            # ノートオフ：次のノートオンとの中間（swingでシフト）
+            if i < len(degree_timings):
+                next_on = degree_timings[i]  # 次のdegree押下
+            else:
+                # 次ノートの開始（8拍後）
+                next_on = note_start_time + (timing_calc.seconds_per_beat * 8)
+            t_off = TimingCalculator.compute_note_off_time(press_time, next_on, swing=performance.swing)
             events.append(MIDIEvent(
-                timestamp=press_time + 0.05,  # 50ms後
+                timestamp=t_off,
                 event_type=MIDIEventType.NOTE_OFF,
                 note=degree_note,
-                description=f"Note {note_index}: Degree '{note.degree}' release {i}/8"
+                description=f"Note {note_index}: Degree '{note.degree}' release {i}/8 (swing={performance.swing})"
             ))
 
         # 3. モディファイア解放

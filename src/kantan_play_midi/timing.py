@@ -96,3 +96,29 @@ class TimingCalculator:
             float: 演奏時間（秒）
         """
         return note_count * self.seconds_per_beat * 8
+
+    # --- swing対応: ノートオフ時刻の計算 ---------------------------------
+    @staticmethod
+    def compute_note_off_time(t_on: float, t_next_on: float, swing: int = 0, epsilon: float = 0.01) -> float:
+        """
+        ノートオン(1)と次ノートオン(3)の間で、ノートオフ(2)の時刻を決定する。
+
+        - swing=0 のとき ちょうど中間（1---2---3）
+        - swing=100 のとき 2/3 地点（1----2--3）
+
+        Args:
+            t_on: 現在のノートオン時刻
+            t_next_on: 次のノートオン時刻
+            swing: 0..100（範囲外はクランプ）
+            epsilon: オーバーラップ防止の最小間隔（秒）
+
+        Returns:
+            ノートオフ時刻
+        """
+        if t_next_on <= t_on:
+            return t_on + epsilon
+        s = max(0, min(100, int(swing)))
+        alpha = 0.5 + (s / 100.0) * (1.0 / 6.0)  # 0.5..0.666...
+        t_off = t_on + alpha * (t_next_on - t_on)
+        # 重なり防止
+        return min(t_off, t_next_on - max(0.001, float(epsilon)))

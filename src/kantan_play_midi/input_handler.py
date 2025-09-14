@@ -77,7 +77,8 @@ class InputHandler:
         return Performance(
             slot=data["slot"],
             tempo=data["tempo"],
-            notes=notes
+            notes=notes,
+            swing=int(data.get("swing", 0)) if isinstance(data.get("swing", 0), (int, float)) else 0,
         )
 
     def _parse_notes(self, notes_data: List[Dict[str, Any]]) -> List[Note]:

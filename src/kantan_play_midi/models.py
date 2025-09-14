@@ -32,6 +32,7 @@ class Performance:
     slot: int
     tempo: int
     notes: List[Note]
+    swing: int = 0  # 0..100（省略時0）
 
     def __post_init__(self) -> None:
         """初期化後の検証"""
@@ -42,6 +43,17 @@ class Performance:
         # tempoの検証
         if not 20 <= self.tempo <= 600:
             raise ValueError(f"tempo must be between 20 and 600 BPM, got {self.tempo}")
+        
+        # swing の検証
+        try:
+            s = int(self.swing)
+        except Exception as _:
+            s = 0
+        if s < 0:
+            s = 0
+        if s > 100:
+            s = 100
+        self.swing = s
         
         # notesの検証
         if not self.notes:
