@@ -45,6 +45,18 @@ console = Console()
     help='実際にMIDI演奏を実行する'
 )
 @click.option(
+    '--speed', '-s',
+    type=float,
+    default=1.0,
+    show_default=True,
+    help='再生スピード倍率（1.0=等速, 2.0=2倍速）'
+)
+@click.option(
+    '--double-speed',
+    is_flag=True,
+    help='2倍速のショートカット（--speed 2.0 と同じ）'
+)
+@click.option(
     '--midi-port',
     type=str,
     help='使用するMIDIポート名'
@@ -67,7 +79,9 @@ def main(
     play: bool,
     midi_port: Optional[str],
     list_ports: bool,
-    verbose: bool
+    verbose: bool,
+    speed: float,
+    double_speed: bool
 ) -> None:
     """
     Kantan Play MIDI - JSON入力からMIDI演奏を実行
@@ -91,6 +105,13 @@ def main(
         console.print("[yellow]📖 入力ファイルを読み込み中...[/yellow]")
         handler = InputHandler()
         performance = handler.load_from_file(input_file)
+
+        # 再生スピード設定
+        if double_speed:
+            speed = 2.0
+        if speed <= 0:
+            speed = 1.0
+        effective_tempo = max(20, min(600, int(round(performance.tempo * speed))))
         
         # 詳細検証
         handler.validate_performance(performance)
@@ -99,6 +120,8 @@ def main(
         
         if verbose:
             _display_performance_info(performance)
+            if speed != 1.0:
+                console.print(f"[blue]再生テンポ:[/blue] {effective_tempo} BPM (x{speed:.2f})")
 
         if validate_only:
             console.print("[blue]🔍 検証モードで実行されました[/blue]")
@@ -112,7 +135,7 @@ def main(
         console.print("[green]✅ MIDI設定の読み込みが完了しました[/green]")
 
         # シーケンス生成
-        sequence = processor.process_performance(performance)
+        sequence = processor.process_performance(performance, tempo_scale=speed)
 
         if show_conversion or verbose:
             _display_conversion_results(performance, processor.converter)

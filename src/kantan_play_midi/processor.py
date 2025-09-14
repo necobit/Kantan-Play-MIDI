@@ -21,7 +21,7 @@ class PerformanceProcessor:
         self.config = config
         self.converter = MIDIConverter(config)
 
-    def process_performance(self, performance: Performance) -> PlaybackSequence:
+    def process_performance(self, performance: Performance, *, tempo_scale: float = 1.0) -> PlaybackSequence:
         """
         演奏データを処理してMIDIシーケンスを生成
         
@@ -31,7 +31,14 @@ class PerformanceProcessor:
         Returns:
             PlaybackSequence: 再生シーケンス
         """
-        timing_calc = TimingCalculator(performance.tempo)
+        try:
+            scale = float(tempo_scale)
+        except Exception:
+            scale = 1.0
+        if scale <= 0:
+            scale = 1.0
+        effective_tempo = max(20, min(600, int(round(performance.tempo * scale))))
+        timing_calc = TimingCalculator(effective_tempo)
         events: List[MIDIEvent] = []
 
         # 1. スロット選択イベント
@@ -54,7 +61,7 @@ class PerformanceProcessor:
             events=events,
             total_duration=total_duration,
             slot=performance.slot,
-            tempo=performance.tempo
+            tempo=effective_tempo
         )
         sequence.sort_events()
 
