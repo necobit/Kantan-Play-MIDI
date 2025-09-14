@@ -1,0 +1,15 @@
+{
+  "slot": 2,
+  "tempo": 140,
+  "notes": [
+    { "degree": "1", "modifier1": "8" },
+    { "degree": "4", "modifier1": "8" },
+    { "degree": "5", "modifier1": "4" },
+    { "degree": "6", "modifier1": "4" },
+    { "degree": "2", "modifier1": "4" },
+    { "degree": "3", "modifier1": "4" },
+    { "degree": "4", "modifier1": "8" },
+    { "degree": "5", "modifier1": "4" },
+    { "degree": "7b", "modifier1": "8" }
+  ]
+}

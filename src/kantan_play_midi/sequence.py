@@ -11,6 +11,7 @@ class MIDIEventType(Enum):
     NOTE_ON = "note_on"
     NOTE_OFF = "note_off"
     SLOT_PRESS = "slot_press"
+    SOUND_STOP = "sound_stop"
 
 
 @dataclass

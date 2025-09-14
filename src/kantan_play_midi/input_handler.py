@@ -105,12 +105,19 @@ class InputHandler:
             if "degree" not in note_data:
                 raise ValueError(f"Note at index {i} is missing 'degree' field")
             
-            # Noteオブジェクトの作成
+            # Noteオブジェクトの作成（型変換付き）
+            try:
+                modifier1 = int(note_data.get("modifier1", 0))
+                modifier2 = int(note_data.get("modifier2", 0))
+                modifier3 = int(note_data.get("modifier3", 0))
+            except (ValueError, TypeError) as e:
+                raise ValueError(f"Note at index {i}: modifier values must be integers, got {e}")
+            
             note = Note(
                 degree=note_data["degree"],
-                modifier1=note_data.get("modifier1", 0),
-                modifier2=note_data.get("modifier2", 0),
-                modifier3=note_data.get("modifier3", 0)
+                modifier1=modifier1,
+                modifier2=modifier2,
+                modifier3=modifier3
             )
             notes.append(note)
         

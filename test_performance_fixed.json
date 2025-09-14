@@ -1,0 +1,15 @@
+{
+  "slot": 1,
+  "tempo": 120,
+  "notes": [
+    { "degree": "1", "modifier1": 8, "modifier2": 0, "modifier3": 0 },
+    { "degree": "4", "modifier1": 8, "modifier2": 0, "modifier3": 0 },
+    { "degree": "5", "modifier1": 4, "modifier2": 0, "modifier3": 0 },
+    { "degree": "6", "modifier1": 4, "modifier2": 0, "modifier3": 0 },
+    { "degree": "2", "modifier1": 4, "modifier2": 0, "modifier3": 0 },
+    { "degree": "3", "modifier1": 4, "modifier2": 0, "modifier3": 0 },
+    { "degree": "4", "modifier1": 8, "modifier2": 0, "modifier3": 0 },
+    { "degree": "5", "modifier1": 4, "modifier2": 0, "modifier3": 0 },
+    { "degree": "7b", "modifier1": 8, "modifier2": 0, "modifier3": 0 }
+  ]
+}

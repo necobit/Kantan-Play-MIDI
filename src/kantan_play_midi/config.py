@@ -47,3 +47,8 @@ class MIDIConfig:
     def modifier3_notes(self) -> List[int]:
         """modifier3用のMIDIノートナンバーリストを返す"""
         return self._config.get('modifier3', [])
+
+    @property
+    def sound_stop_note(self) -> int:
+        """発音停止用のMIDIノートナンバーを返す"""
+        return self._config.get('sound_stop', 72)

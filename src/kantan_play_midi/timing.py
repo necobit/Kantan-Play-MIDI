@@ -26,7 +26,8 @@ class TimingCalculator:
             List[float]: 各音符の開始時刻（秒）
         """
         timings = []
-        current_time = 0.0
+        # スロット選択完了後に演奏開始（100ms後）
+        current_time = 0.1
         
         for i in range(note_count):
             timings.append(current_time)
@@ -95,4 +96,5 @@ class TimingCalculator:
         Returns:
             float: 演奏時間（秒）
         """
-        return note_count * self.seconds_per_beat * 8
+        # スロット選択時間(0.1秒) + 音符演奏時間
+        return 0.1 + (note_count * self.seconds_per_beat * 8)

@@ -1,43 +1,46 @@
-# Kantan Play MIDI - かんぷれコントロール用Pythonライブラリ
+# Kantan Play MIDI - かんぷれコントロール用 Python ライブラリ
 
-「かんぷれ」ガジェットを自動制御するためのPythonライブラリです。JSON形式の演奏データをMIDI信号に変換し、物理的なボタン操作をシミュレートします。
+「かんぷれ」ガジェットを自動制御するための Python ライブラリです。JSON 形式の演奏データを MIDI 信号に変換し、物理的なボタン操作をシミュレートします。
 
 ## 🎯 概要
 
-このプロジェクトは、音楽演奏ガジェット「かんぷれ」を自動化するためのツールです。JSON形式で記述された演奏データを読み込み、MIDI信号を通じてガジェットのボタンを自動で押下・離脱することで、楽曲の自動演奏を実現します。
+このプロジェクトは、音楽演奏ガジェット「かんぷれ」を自動化するためのツールです。JSON 形式で記述された演奏データを読み込み、MIDI 信号を通じてガジェットのボタンを自動で押下・離脱することで、楽曲の自動演奏を実現します。
 
 ### 主な機能
 
-- ✅ JSON形式の演奏データ読み込み
-- ✅ リアルタイムMIDI信号送信
-- ✅ スロット選択とdegreeボタンの自動制御
+- ✅ JSON 形式の演奏データ読み込み
+- ✅ リアルタイム MIDI 信号送信
+- ✅ スロット選択と degree ボタンの自動制御
 - ✅ モディファイアボタンの組み合わせ制御
-- ✅ BPMベースのタイミング制御
-- ✅ 豊富なCLIオプション
+- ✅ BPM ベースのタイミング制御
+- ✅ 豊富な CLI オプション
 - ✅ 包括的なエラーハンドリング
 
 ## 📦 インストール
 
 ### 必要環境
 
-- Python 3.8以上
+- Python 3.8 以上
 - pip (パッケージ管理ツール)
-- MIDIインターフェース（USB-MIDI、仮想MIDIポートなど）
+- MIDI インターフェース（USB-MIDI、仮想 MIDI ポートなど）
 
 ### インストール手順
 
 1. **リポジトリのクローン**
+
 ```bash
 git clone https://github.com/necobit/Kantan-Play-MIDI.git
 cd Kantan-Play-MIDI
 ```
 
 2. **パッケージのインストール**
+
 ```bash
 pip install -e .
 ```
 
 3. **動作確認**
+
 ```bash
 kantan-play-midi --help
 ```
@@ -46,37 +49,41 @@ kantan-play-midi --help
 
 以下のパッケージが自動的にインストールされます：
 
-- `python-rtmidi>=1.5.8` - MIDI入出力
-- `mido>=1.3.2` - MIDI処理
-- `click>=8.1.7` - CLIインターフェース
+- `python-rtmidi>=1.5.8` - MIDI 入出力
+- `mido>=1.3.2` - MIDI 処理
+- `click>=8.1.7` - CLI インターフェース
 - `rich>=13.7.0` - コンソール表示
 
 ## 🚀 基本的な使い方
 
-### 1. MIDIポートの確認
+### 1. MIDI ポートの確認
 
-利用可能なMIDIポートを確認：
+利用可能な MIDI ポートを確認：
+
 ```bash
 kantan-play-midi test_performance.json --list-ports
 ```
 
 ### 2. 演奏データの検証
 
-JSON形式の演奏データが正しいかチェック：
+JSON 形式の演奏データが正しいかチェック：
+
 ```bash
 kantan-play-midi input.json --validate-only
 ```
 
 ### 3. 変換結果の表示
 
-MIDI変換の詳細を確認：
+MIDI 変換の詳細を確認：
+
 ```bash
 kantan-play-midi input.json --show-conversion -v
 ```
 
 ### 4. 実際の演奏実行
 
-MIDI信号を送信して演奏：
+MIDI 信号を送信して演奏：
+
 ```bash
 kantan-play-midi input.json --play --midi-port "Your MIDI Port"
 ```
@@ -84,13 +91,14 @@ kantan-play-midi input.json --play --midi-port "Your MIDI Port"
 ### 5. 簡単テスト
 
 付属のテストスクリプトで動作確認：
+
 ```bash
 ./quick_test.sh
 ```
 
 ## 📝 演奏データ形式
 
-### JSON形式の例
+### JSON 形式の例
 
 ```json
 {
@@ -121,19 +129,19 @@ kantan-play-midi input.json --play --midi-port "Your MIDI Port"
 
 ### パラメータ説明
 
-| パラメータ | 型 | 範囲 | 説明 |
-|------------|----|----|------|
-| `slot` | 整数 | 1-8 | 使用するスロット番号 |
-| `tempo` | 整数 | 1-300 | テンポ (BPM) |
-| `notes` | 配列 | - | 演奏する音符のリスト |
-| `degree` | 文字列 | "1", "2b", "2", "3b", "3", "4", "5b", "5", "6b", "6", "7b", "7" | 音階 |
-| `modifier1-3` | 整数 | 0-8 | モディファイア値（0は無効） |
+| パラメータ    | 型     | 範囲                                                            | 説明                         |
+| ------------- | ------ | --------------------------------------------------------------- | ---------------------------- |
+| `slot`        | 整数   | 1-8                                                             | 使用するスロット番号         |
+| `tempo`       | 整数   | 1-300                                                           | テンポ (BPM)                 |
+| `notes`       | 配列   | -                                                               | 演奏する音符のリスト         |
+| `degree`      | 文字列 | "1", "2b", "2", "3b", "3", "4", "5b", "5", "6b", "6", "7b", "7" | 音階                         |
+| `modifier1-3` | 整数   | 0-8                                                             | モディファイア値（0 は無効） |
 
 ## ⚙️ 設定ファイル
 
 ### MIDI.json
 
-MIDI設定ファイルで、各要素のMIDIノートナンバーを定義：
+MIDI 設定ファイルで、各要素の MIDI ノートナンバーを定義：
 
 ```json
 {
@@ -145,24 +153,34 @@ MIDI設定ファイルで、各要素のMIDIノートナンバーを定義：
 }
 ```
 
+modifier の関連付け
+52 = "m7-5"
+53 = "dim"
+54 = "aug"
+55 = "7"
+56 = "sus4"
+57 = "~"
+58 = "add9"
+59 = "maj7"
+
 ## 🎹 演奏の仕組み
 
 ### タイミング制御
 
-1. **BPMベース**: `tempo`パラメータでBPMを指定
-2. **degreeボタン**: 各音符で8回押下（4拍に相当）
-3. **拍計算**: 1拍 = 60秒 ÷ BPM
-4. **次の音符**: 8回の押下完了後に次の音符へ進行
+1. **BPM ベース**: `tempo`パラメータで BPM を指定
+2. **degree ボタン**: 各音符で 8 回押下（4 拍に相当）
+3. **拍計算**: 1 拍 = 60 秒 ÷ BPM
+4. **次の音符**: 8 回の押下完了後に次の音符へ進行
 
 ### ボタン操作シーケンス
 
-1. **スロット選択**: 演奏開始時に1回実行
+1. **スロット選択**: 演奏開始時に 1 回実行
 2. **音符演奏**（各音符ごと）:
    - モディファイアボタン押下（該当する場合）
-   - degreeボタンを8回押下・離脱
+   - degree ボタンを 8 回押下・離脱
    - モディファイアボタン離脱
 
-### MIDI信号例
+### MIDI 信号例
 
 ```
 スロット選択: [144, 24, 127] → 50ms後 → [128, 24, 0]
@@ -177,16 +195,16 @@ kantan-play-midi [OPTIONS] INPUT_FILE
 
 ### オプション一覧
 
-| オプション | 説明 |
-|-----------|------|
-| `--config PATH` | MIDI設定ファイル（デフォルト: MIDI.json） |
-| `--validate-only` | 入力ファイルの検証のみ実行 |
-| `--show-conversion` | 変換結果を表示 |
-| `--play` | 実際にMIDI演奏を実行 |
-| `--midi-port TEXT` | 使用するMIDIポート名 |
-| `--list-ports` | 利用可能なMIDIポートを一覧表示 |
-| `-v, --verbose` | 詳細な情報を表示 |
-| `--help` | ヘルプを表示 |
+| オプション          | 説明                                       |
+| ------------------- | ------------------------------------------ |
+| `--config PATH`     | MIDI 設定ファイル（デフォルト: MIDI.json） |
+| `--validate-only`   | 入力ファイルの検証のみ実行                 |
+| `--show-conversion` | 変換結果を表示                             |
+| `--play`            | 実際に MIDI 演奏を実行                     |
+| `--midi-port TEXT`  | 使用する MIDI ポート名                     |
+| `--list-ports`      | 利用可能な MIDI ポートを一覧表示           |
+| `-v, --verbose`     | 詳細な情報を表示                           |
+| `--help`            | ヘルプを表示                               |
 
 ## 🧪 テスト
 
@@ -243,7 +261,7 @@ docs/                   # ドキュメント
 examples/               # サンプルファイル
 ```
 
-### API使用例
+### API 使用例
 
 ```python
 from kantan_play_midi import MIDIPlayer, InputHandler, PerformanceProcessor
@@ -265,12 +283,14 @@ player.play_sequence(sequence)
 
 ### よくある問題
 
-1. **MIDIポートが見つからない**
+1. **MIDI ポートが見つからない**
+
    ```bash
    kantan-play-midi input.json --list-ports
    ```
 
 2. **パッケージインストールエラー**
+
    ```bash
    pip install --upgrade pip
    pip install -e .
@@ -285,6 +305,7 @@ player.play_sequence(sequence)
 ### ログ確認
 
 詳細なログ情報を表示：
+
 ```bash
 kantan-play-midi input.json --play -v
 ```
@@ -304,7 +325,7 @@ kantan-play-midi input.json --play -v
 
 ## 📄 ライセンス
 
-このプロジェクトはMITライセンスの下で公開されています。
+このプロジェクトは MIT ライセンスの下で公開されています。
 
 ## 🔗 関連リンク
 
@@ -316,4 +337,4 @@ kantan-play-midi input.json --play -v
 
 **作成者**: necobit  
 **バージョン**: 0.1.0  
-**最終更新**: 2025年7月6日
+**最終更新**: 2025 年 7 月 6 日

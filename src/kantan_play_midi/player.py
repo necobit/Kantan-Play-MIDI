@@ -137,6 +137,21 @@ class MIDIPlayer:
         time.sleep(duration_ms / 1000.0)
         self.send_note_off(note)
 
+    def send_sound_stop(self) -> None:
+        """
+        発音停止信号を送信
+        
+        Raises:
+            MIDIDeviceError: MIDI接続がない場合
+        """
+        if not self.is_connected():
+            raise MIDIDeviceError("MIDI device not connected")
+
+        # ノート72をオンにして50ms後にオフ
+        self.send_note_on(72)
+        time.sleep(0.05)  # 50ms
+        self.send_note_off(72)
+
     def play_sequence(self, sequence: PlaybackSequence) -> None:
         """
         シーケンスの演奏を開始
@@ -186,8 +201,8 @@ class MIDIPlayer:
             if self._playback_thread and self._playback_thread.is_alive():
                 self._playback_thread.join(timeout=1.0)
 
-            # 全ノートオフ
-            self._send_all_notes_off()
+            # 発音停止と全ノートオフ
+            self._send_sound_stop_and_all_notes_off()
 
     def get_state(self) -> PlaybackState:
         """現在の演奏状態を取得"""
@@ -236,6 +251,12 @@ class MIDIPlayer:
 
         # 演奏完了
         self._state = PlaybackState.STOPPED
+        
+        # 演奏完了時に発音停止信号を送信
+        try:
+            self.send_sound_stop()
+        except:
+            pass  # エラーは無視
 
     def _execute_event(self, event: MIDIEvent) -> None:
         """MIDIイベントを実行"""
@@ -246,6 +267,23 @@ class MIDIPlayer:
         elif event.event_type == MIDIEventType.SLOT_PRESS:
             # スロット選択は短時間の押下
             self.press_button(event.note, int(event.duration * 1000) if event.duration else 50)
+        elif event.event_type == MIDIEventType.SOUND_STOP:
+            # 発音停止信号を送信
+            self.send_sound_stop()
+
+    def _send_sound_stop_and_all_notes_off(self) -> None:
+        """発音停止と全ノートオフメッセージを送信"""
+        if not self.is_connected():
+            return
+
+        try:
+            # まず発音停止信号を送信
+            self.send_sound_stop()
+        except:
+            pass  # エラーは無視
+
+        # その後、全ノートオフ
+        self._send_all_notes_off()
 
     def _send_all_notes_off(self) -> None:
         """全ノートオフメッセージを送信"""
