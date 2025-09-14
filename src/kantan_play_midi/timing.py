@@ -14,6 +14,8 @@ class TimingCalculator:
         """
         self.tempo = tempo
         self.seconds_per_beat = 60.0 / tempo
+        # スロット押下後に演奏を始めるリード時間（拍単位）
+        self.slot_lead_beats = 0.5  # 0.5拍(= 八分音符相当)
 
     def calculate_note_timings(self, note_count: int) -> List[float]:
         """
@@ -26,7 +28,8 @@ class TimingCalculator:
             List[float]: 各音符の開始時刻（秒）
         """
         timings = []
-        current_time = 0.0
+        # スロット押下の直後から少し置いて演奏開始（0.5拍ぶん）
+        current_time = self.seconds_per_beat * self.slot_lead_beats
         
         for i in range(note_count):
             timings.append(current_time)
@@ -95,7 +98,8 @@ class TimingCalculator:
         Returns:
             float: 演奏時間（秒）
         """
-        return note_count * self.seconds_per_beat * 8
+        # 先頭にスロットリード時間を加味
+        return (self.seconds_per_beat * self.slot_lead_beats) + (note_count * self.seconds_per_beat * 8)
 
     # --- swing対応: ノートオフ時刻の計算 ---------------------------------
     @staticmethod
