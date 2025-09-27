@@ -22,6 +22,7 @@ class MIDIEvent:
     velocity: int = 127
     duration: Optional[float] = None  # イベントの継続時間（秒）
     description: str = ""  # デバッグ用の説明
+    port_override: Optional[str] = None  # 特定ポートで送信したい場合のポート名
 
 
 @dataclass

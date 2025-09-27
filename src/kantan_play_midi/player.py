@@ -30,6 +30,7 @@ class MIDIPlayer:
         self.midi_port = midi_port
         self.channel = 0  # チャンネル1 (0-indexed)
         self._midi_out: Optional[rtmidi.MidiOut] = None
+        self._additional_ports: Dict[str, rtmidi.MidiOut] = {}
         self._playback_thread: Optional[threading.Thread] = None
         self._state = PlaybackState.STOPPED
         self._current_sequence: Optional[PlaybackSequence] = None
@@ -80,6 +81,29 @@ class MIDIPlayer:
         except Exception as e:
             raise MIDIDeviceError(f"Failed to open MIDI port: {e}")
 
+    def connect_additional_port(self, port_name: Optional[str]) -> None:
+        """追加のMIDIポートに接続する"""
+        if not port_name:
+            return
+        if port_name == self.midi_port:
+            return
+        if port_name in self._additional_ports:
+            return
+
+        midi_out = rtmidi.MidiOut()
+        available_ports = midi_out.get_ports()
+        if port_name not in available_ports:
+            midi_out.delete()
+            raise MIDIDeviceError(f"MIDI port '{port_name}' not found. Available: {available_ports}")
+        port_index = available_ports.index(port_name)
+        try:
+            midi_out.open_port(port_index)
+        except Exception as e:
+            midi_out.delete()
+            raise MIDIDeviceError(f"Failed to open MIDI port '{port_name}': {e}")
+
+        self._additional_ports[port_name] = midi_out
+
     def disconnect(self) -> None:
         """MIDIポートから切断する"""
         self.stop()
@@ -87,15 +111,40 @@ class MIDIPlayer:
             self._midi_out.close_port()
             self._midi_out.delete()
             self._midi_out = None
+        for midi_out in self._additional_ports.values():
+            try:
+                midi_out.close_port()
+            finally:
+                midi_out.delete()
+        self._additional_ports.clear()
 
     def is_connected(self) -> bool:
         """MIDI接続状態を確認"""
         return self._midi_out is not None and self._midi_out.is_port_open()
 
+    def _get_output_for_port(self, port_name: Optional[str]) -> Optional[rtmidi.MidiOut]:
+        if port_name is None or port_name == self.midi_port:
+            return self._midi_out
+        return self._additional_ports.get(port_name)
+
+    def _send_note_on_to(self, note: int, velocity: int, port_name: Optional[str]) -> None:
+        midi_out = self._get_output_for_port(port_name)
+        if midi_out is None or not midi_out.is_port_open():
+            raise MIDIDeviceError("MIDI device not connected")
+        note_on = [0x90 + self.channel, note & 0x7F, velocity & 0x7F]
+        midi_out.send_message(note_on)
+
+    def _send_note_off_to(self, note: int, port_name: Optional[str]) -> None:
+        midi_out = self._get_output_for_port(port_name)
+        if midi_out is None or not midi_out.is_port_open():
+            raise MIDIDeviceError("MIDI device not connected")
+        note_off = [0x80 + self.channel, note & 0x7F, 0]
+        midi_out.send_message(note_off)
+
     def send_note_on(self, note: int, velocity: int = 127) -> None:
         """
         ノートオンメッセージを送信
-        
+
         Args:
             note: MIDIノートナンバー (0-127)
             velocity: ベロシティ (0-127)
@@ -103,11 +152,7 @@ class MIDIPlayer:
         Raises:
             MIDIDeviceError: MIDI接続がない場合
         """
-        if not self.is_connected():
-            raise MIDIDeviceError("MIDI device not connected")
-
-        note_on = [0x90 + self.channel, note & 0x7F, velocity & 0x7F]
-        self._midi_out.send_message(note_on)
+        self._send_note_on_to(note, velocity, None)
 
     def send_note_off(self, note: int) -> None:
         """
@@ -119,11 +164,7 @@ class MIDIPlayer:
         Raises:
             MIDIDeviceError: MIDI接続がない場合
         """
-        if not self.is_connected():
-            raise MIDIDeviceError("MIDI device not connected")
-
-        note_off = [0x80 + self.channel, note & 0x7F, 0]
-        self._midi_out.send_message(note_off)
+        self._send_note_off_to(note, None)
 
     def press_button(self, note: int, duration_ms: int = 50) -> None:
         """
@@ -239,25 +280,32 @@ class MIDIPlayer:
 
     def _execute_event(self, event: MIDIEvent) -> None:
         """MIDIイベントを実行"""
+        target_port = event.port_override
         if event.event_type == MIDIEventType.NOTE_ON:
-            self.send_note_on(event.note, event.velocity)
+            self._send_note_on_to(event.note, event.velocity, target_port)
         elif event.event_type == MIDIEventType.NOTE_OFF:
-            self.send_note_off(event.note)
+            self._send_note_off_to(event.note, target_port)
         elif event.event_type == MIDIEventType.SLOT_PRESS:
             # スロット選択は短時間の押下
-            self.press_button(event.note, int(event.duration * 1000) if event.duration else 50)
+            duration_ms = int(event.duration * 1000) if event.duration else 50
+            if target_port and target_port != self.midi_port:
+                self._send_note_on_to(event.note, event.velocity, target_port)
+                time.sleep(duration_ms / 1000.0)
+                self._send_note_off_to(event.note, target_port)
+            else:
+                self.press_button(event.note, duration_ms)
 
     def _send_all_notes_off(self) -> None:
         """全ノートオフメッセージを送信"""
-        if not self.is_connected():
-            return
+        targets = [None]
+        targets.extend(self._additional_ports.keys())
 
-        # すべてのノートをオフ
         for note in range(128):
-            try:
-                self.send_note_off(note)
-            except:
-                pass  # エラーは無視
+            for port_name in targets:
+                try:
+                    self._send_note_off_to(note, port_name)
+                except Exception:
+                    pass  # エラーは無視
 
     def __del__(self):
         """デストラクタ"""
